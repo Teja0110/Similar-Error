@@ -144,9 +144,9 @@ def sub(str1,str2):
     match = seqMatch.find_longest_match(0, len(str1), 0, len(str2))
         
         # print longest substring
-        if (match.size!=0):
-            z=str1[match.a: match.a + match.size]
-            return z
+    if (match.size!=0):
+        z=str1[match.a: match.a + match.size]
+    return z
 
 def de(str1,str2):
     a=dict()
@@ -157,10 +157,10 @@ def de(str1,str2):
     a[c]=str1
     return a
 
-a=[error['old_text'] for error in data[0]['markup'] if error['type'] == 'grammar']
-b=[error['new_text'] for error in data[0]['markup'] if error['type'] == 'grammar']
-print(a)
-for i in range(1,len(a)):
-    c=sub(a[i-1],a[i])
-    if(c!=None):
-        print(de(c,a[i-1]))
+#a=[error['old_text'] for error in data[0]['markup'] if error['type'] == 'grammar']
+#b=[error['new_text'] for error in data[0]['markup'] if error['type'] == 'grammar']
+#print(a)
+#for i in range(1,len(a)):
+#    c=sub(a[i-1],a[i])
+#    if(c!=None):
+#        print(de(c,a[i-1]))
