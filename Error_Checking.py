@@ -133,34 +133,97 @@ def punctuation_error(input):
                     output[error_name]['index'].append(i)
                     output[error_name]['error_count'] = output[error_name]['error_count'] + 1
     return output
-
-def sub(str1,str2):
-    # initialize SequenceMatcher object with
-    # input string
-    seqMatch = SequenceMatcher(None,str1,str2)
-    
-    # find match of longest sub-string
-    # output will be like Match(a=0, b=0, size=5)
-    match = seqMatch.find_longest_match(0, len(str1), 0, len(str2))
-        
-        # print longest substring
+def sub(str1,str2): 
+    seqMatch = SequenceMatcher(None,str1,str2) 
+    match = seqMatch.find_longest_match(0, len(str1), 0, len(str2)) 
     if (match.size!=0):
         z=str1[match.a: match.a + match.size]
-    return z
-
-def de(str1,str2):
+        return z
+    
+def de(str1,str2,str3):
     a=dict()
+    c=None
     for i in str1:
         for j in str2:
             if(i==j and str1.index(i)==str2.index(j)):
                 c=str1.replace(i,'')
-    a[c]=str1
+            
+                
+    if c==None:
+        return
+    if c not in a.keys():
+        a[c]=[str1,str3]
+    else:
+        a[c]=a[c]+[str1,str3]
     return a
+	
+def spel(i):
+    a=[error['old_text'] for error in data[i]['markup'] if error['type'] == 'spelling']
+    b=[error['new_text'] for error in data[i]['markup'] if error['type'] == 'spelling']
+    co=0
+    e=dict()
+    for i in range(0,len(a)-1):
+        for j in range(i,len(a)-1):
+            if i!=j:
+                c=sub(a[i],a[j])
+                if(c!=None and len(c)>3 and b[j]!=None):
+                    d=de(a[j],b[j],a[i])
+                    if(d is not None):
+                        for k in d.keys():
+                            e[k]=d[k]
+    if e!=None:
+        r1=0
+        g=dict()
+        for i in e.keys():
+            if len(e[i])>1:
+                g[i]=len(e[i])
+                r1=r1+len(e[i])
+                
+        #UNCOMMENT THESE LINES IF YOU WISH TO SEE THE MOST COMMON ERRORS FOR EACH STUDENT 
+        #print("common error patterns",end=' ')
+        #print([i for i in e.keys() if len(e[i])>1])
+        #print("common error words", end=' ')
+        #print([v for v in e.values() if len(e[i])>1] )
 
-#a=[error['old_text'] for error in data[0]['markup'] if error['type'] == 'grammar']
-#b=[error['new_text'] for error in data[0]['markup'] if error['type'] == 'grammar']
-#print(a)
-#for i in range(1,len(a)):
-#    c=sub(a[i-1],a[i])
-#    if(c!=None):
-#        print(de(c,a[i-1]))
+
+        #print("percentage of common errors:",end=' ')
+        #if(len(a)!=0):
+         #   print((r1*100)/len(a))
+        #else:
+         #   print("No spelling errors found")
+
+        #plt.bar(g.keys(), g.values(), 1, color='g')
+        #plt.show()
+        return e
+def act():
+    f=dict()
+    m,k=0,0
+    for i in range(0,209):
+        e=spel(i)
+        if e is not None:
+            for i in e.keys():
+                if i not in f.keys():
+                    f[i]=e[i]
+                    k=k+len(e[i])
+                else:
+                    f[i]=f[i]+e[i]
+                    k=k+len(e[i])
+                    
+    c=[(len(f[i]),i) for i in f.keys() if len(f[i])>2]
+    print("The common spelling errors among the whole data set is")
+    h=dict()
+    for i in c:
+        h[i[1]]=len(f[i[1]])
+        print(i[1],f[i[1]])
+    plt.bar(h.keys(),h.values(),1, color='b')
+    plt.show()
+    return k
+a=0
+g=act()
+for i in range(0,209):
+    a=a+len([error['old_text'] for error in data[i]['markup'] if error['type'] == 'spelling'])
+print("Percentage of Spelling errors similar")
+if g!=0:
+    print(g*100/a)
+else:
+    print("No spelling errors found")
