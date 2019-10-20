@@ -1,5 +1,4 @@
-# NLP_SimilarError
-Similar Errors Tracker
+# Similar Errors Tracker
 By Anjaneya Teja Sarma Kalvakolanu and Bao Nguyen
 
 ## Project Description
