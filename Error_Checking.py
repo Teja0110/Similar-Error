@@ -3,10 +3,14 @@ import string
 import math
 from collections import Counter # To find different characters between two sentences
 from difflib import SequenceMatcher 
+import json
+import data_utils as dt
+import matplotlib.pyplot as plt
 
 # input: and essay with plain_text and markup
 # output: return a list of similar errors of word_choice with number of error for each
 # The related words for that error and the indices (on markup) of that error
+data = dt.process_data('Data/tai-documents-v3/tai-documents-v3.json')
 def word_choice(input):
     output = []
     check = False
