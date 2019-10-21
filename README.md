@@ -15,5 +15,7 @@ This project aims at finding the similar errors that are committed by the studen
 ## Library and Tool: 
 NLTK, Matplotlib, Json, Math
 
-
+## Running
+   To get all the result and statictis please running the Jupyter Notebook file 'Similar Error.ipynb'
+   you can get sample result by running python3 Error_Checking.py
 
