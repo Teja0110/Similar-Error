@@ -6,11 +6,14 @@ from difflib import SequenceMatcher
 import json
 import data_utils as dt
 import matplotlib.pyplot as plt
+import nltk
 
 # input: and essay with plain_text and markup
 # output: return a list of similar errors of word_choice with number of error for each
 # The related words for that error and the indices (on markup) of that error
+# Getting data
 data = dt.process_data('Data/tai-documents-v3/tai-documents-v3.json')
+
 def word_choice(input):
     output = []
     check = False
@@ -216,18 +219,93 @@ def act():
     c=[(len(f[i]),i) for i in f.keys() if len(f[i])>2]
     print("The common spelling errors among the whole data set is")
     h=dict()
+    freq_dist = {}
     for i in c:
         h[i[1]]=len(f[i[1]])
+        freq_dist[', '.join(f[i[1]])] = len(f[i[1]])
         print(i[1],f[i[1]])
     plt.bar(h.keys(),h.values(),1, color='b')
     plt.show()
-    return k
-a=0
-g=act()
-for i in range(0,209):
-    a=a+len([error['old_text'] for error in data[i]['markup'] if error['type'] == 'spelling'])
-print("Percentage of Spelling errors similar")
-if g!=0:
-    print(g*100/a)
-else:
-    print("No spelling errors found")
+    return (k, freq_dist)
+
+def main():
+    # Running sample of our function on the dataset. Geting some of the result and stat
+    # To get the full result and all the statictis please refer to Similar Errors.ipynb
+    
+    
+    
+    # Running Word choice error detection on dataset
+    # And print out top 10 common error
+    
+    # Tuple of set of word of word choice error and its appearance
+    word_set_freq = [[wc_error['words'], wc_error['error_count']] for essay in data for wc_error in word_choice(essay)]
+    word_set_freq_merge = []
+    rm_index_set = set()
+    for i in range(len(word_set_freq)):
+        if i not in rm_index_set:
+            c = word_set_freq[i]
+            for j in range(i+1, len(word_set_freq)):
+                if j not in rm_index_set:
+                    tmp = word_set_freq[j]
+                    for w in tmp[0]:
+                        if w in c[0]:
+                            c[1] = c[1] + tmp[1]
+                            rm_index_set.add(j)
+                            break
+            word_set_freq_merge.append(c)
+
+    word_set_freq_dict =  nltk.FreqDist([', '.join(err[0]) for err in word_set_freq_merge for i in range(err[1])])
+    print("Top 10 common word choice error in whole dataset")
+    print(word_set_freq_dict.most_common(10))
+    print()
+    print("-------------------------------------------------")
+
+    # Running punctuation error detection on dataset
+    # And print out top 5 common error
+
+    # List of All punc_error in all essays after classify
+    punc_errors = [error for essay in data
+               for error in punctuation_error(essay).items()
+               if error[0] != 'other_error']
+
+    # All different error types
+    punc_error_type = set([p_type[0] for p_type in punc_errors])
+    # Each type with total number of appearance
+    error_cnt_total = {key : sum([error[1]['error_count']
+                              for error in punc_errors if error[0] == key])
+                        for key in punc_error_type}
+
+    # There still dublicated in the ressult like 'misleading ,?' and 'misleading ?,'
+    # We're going to merge them
+    error_cnt_total_fix = error_cnt_total.copy()
+    for k in error_cnt_total:
+        if(k[:10] == 'misleading' and k in error_cnt_total_fix):
+            deleted_key = 'misleading ' + k[12] + k[11]
+            if deleted_key in error_cnt_total_fix:
+                error_cnt_total_fix[k] = error_cnt_total_fix[k] + error_cnt_total_fix[deleted_key]
+                del error_cnt_total_fix[deleted_key]
+
+    # Most five common types
+    punc_error_cnt_total_dict = nltk.FreqDist(error_cnt_total_fix)
+
+    print("Top 5 common punctuation error in whole dataset")
+    print(punc_error_cnt_total_dict.most_common(5))
+
+
+    print("-------------------------------------------------")
+    print()
+    
+    # Running speeling error detection on dataset
+    a=0
+    (g, sp_freq_dist)=act()
+    for i in range(0,209):
+        a=a+len([error['old_text'] for error in data[i]['markup'] if error['type'] == 'spelling'])
+    print("Percentage of Spelling errors similar")
+    if g!=0:
+        print(g*100/a)
+    else:
+        print("No spelling errors found")
+
+
+if __name__ == "__main__":
+    main()
